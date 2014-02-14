@@ -4,6 +4,11 @@
  */
 package client.tenebz.view;
 
+import client.tenebz.core.TenebzClient;
+import java.rmi.RemoteException;
+import javax.swing.JOptionPane;
+import server.tenebz.beans.Client;
+
 /**
  *
  * @author TOURE
@@ -13,7 +18,8 @@ public class AuthView extends javax.swing.JFrame {
     /**
      * Creates new form AuthView
      */
-    public AuthView() {
+    public AuthView(TenebzClient tenebzClient) {
+        this.tenebzClient = tenebzClient;
         initComponents();
     }
 
@@ -27,25 +33,88 @@ public class AuthView extends javax.swing.JFrame {
     private void initComponents() {
 
         contenair = new javax.swing.JPanel();
+        titreLbl = new javax.swing.JLabel();
+        pseudoLbl = new javax.swing.JLabel();
+        pseudoVal = new javax.swing.JTextField();
+        connectBtn = new javax.swing.JButton();
+        copyrightsLbl = new javax.swing.JLabel();
+        errorLbl = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        titreLbl.setFont(new java.awt.Font("Edwardian Script ITC", 0, 72)); // NOI18N
+        titreLbl.setText("Tenebz");
+
+        pseudoLbl.setText("Pseudo: ");
+
+        pseudoVal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pseudoValActionPerformed(evt);
+            }
+        });
+
+        connectBtn.setText("Connexion");
+        connectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectBtnActionPerformed(evt);
+            }
+        });
+
+        copyrightsLbl.setText("Copyrights 2014 - IBDlfat Inc.");
+
+        errorLbl.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        errorLbl.setForeground(new java.awt.Color(153, 0, 0));
+        errorLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout contenairLayout = new javax.swing.GroupLayout(contenair);
         contenair.setLayout(contenairLayout);
         contenairLayout.setHorizontalGroup(
             contenairLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, contenairLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(copyrightsLbl))
+            .addGroup(contenairLayout.createSequentialGroup()
+                .addGap(103, 103, 103)
+                .addComponent(titreLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, contenairLayout.createSequentialGroup()
+                .addContainerGap(29, Short.MAX_VALUE)
+                .addComponent(pseudoLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pseudoVal, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(connectBtn)
+                .addGap(34, 34, 34))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, contenairLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(errorLbl, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         contenairLayout.setVerticalGroup(
             contenairLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(contenairLayout.createSequentialGroup()
+                .addContainerGap(28, Short.MAX_VALUE)
+                .addComponent(titreLbl)
+                .addGap(18, 18, 18)
+                .addGroup(contenairLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pseudoVal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(connectBtn)
+                    .addComponent(pseudoLbl))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(copyrightsLbl))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(contenair, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(contenair, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -55,10 +124,36 @@ public class AuthView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void pseudoValActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pseudoValActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pseudoValActionPerformed
+
+    private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+        String pseudo = pseudoVal.getText();
+        if (pseudo.length() > 2) {
+            try {
+                Client client = new Client(pseudo);
+                tenebzClient.setClient(client);
+                if (tenebzClient.getServer().join(client)) {
+                    this.dispose();
+                    ChatView chat = new ChatView(tenebzClient);
+                    tenebzClient.setChat(chat);
+                    chat.view();
+                }
+                errorLbl.setText("Pseudo indisponible, choisissez un autre !");
+            } catch (RemoteException ex) {
+                System.out.println(ex.getMessage());
+                errorLbl.setText("Serveur injoinable, veuillez réessayer ultérieurement !!");
+            }
+        } else {
+            errorLbl.setText("Un peu de créativité, choisissez au moins 3 caractères !!");
+        }
+    }//GEN-LAST:event_connectBtnActionPerformed
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public void view() {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -66,7 +161,7 @@ public class AuthView extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -85,11 +180,23 @@ public class AuthView extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new AuthView().setVisible(true);
+                new AuthView(tenebzClient).setVisible(true);
             }
         });
     }
+
+    public static void ErrorMsg(String message) {
+        new JOptionPane().showMessageDialog(null, message, "Erreur", JOptionPane.ERROR_MESSAGE);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton connectBtn;
     private javax.swing.JPanel contenair;
+    private javax.swing.JLabel copyrightsLbl;
+    private javax.swing.JLabel errorLbl;
+    private javax.swing.JLabel pseudoLbl;
+    private javax.swing.JTextField pseudoVal;
+    private javax.swing.JLabel titreLbl;
     // End of variables declaration//GEN-END:variables
+    private TenebzClient tenebzClient;
 }
